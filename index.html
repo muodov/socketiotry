@@ -1,0 +1,57 @@
+<html>
+<head>
+  <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    var socket = io('http://localhost:3000');
+    var myColor = 'grey';
+    var myUid = -1;
+
+    socket.on('init', function(data) {
+      console.log('init');
+      console.log(data);
+      myColor = data.color;
+      myUid = data.uid;
+    });
+
+    socket.on('draw', function (data) {
+      console.log(data);
+    });
+
+    socket.on('user_connected', function (data) {
+      console.log('user_connected');
+      console.log(data);
+    });
+
+    socket.on('user_disconnected', function (data) {
+      console.log('user_disconnected');
+      console.log(data);
+    });
+  </script>
+</head>
+<body>
+<style>
+  .boardwrap, .userlist {
+    float: left;
+  }
+</style>
+
+<div class="boardwrap">
+  <canvas id="board">Alert!</canvas>
+</div>
+<div class="userlist">
+  
+</div>
+<script>
+  var board = document.getElementById("board"),
+      ctx   = board.getContext('2d');
+  board.height = 480;
+  board.width  = 640;
+  // ctx.strokeStyle = '#B70A02';
+  // ctx.strokeRect(15, 15, 266, 266);
+  // ctx.strokeRect(18, 18, 260, 260);
+  ctx.fillStyle = myColor; // меняем цвет клеток
+  ctx.fillRect(20, 20, 256, 256);
+</script>
+</body>
+</html>
