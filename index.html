@@ -8,11 +8,32 @@
     var myUid = -1;
     var isDrawing = false;
 
+    var uaToBrowser = function(ua) {
+      // TODO: this is just a stub currently
+      if (ua.indexOf('Chrome') != -1) {
+        return 'Chrome';
+      } else {
+        return 'Unknown browser';
+      }
+    };
+
+    var addUser = function(userData) {
+      var user = document.createElement('li');
+      user.style.color = userData.color;
+      user.textContent = userData.ip + ' (' + uaToBrowser(userData.ua) + ')';
+      document.querySelector('.userlist').appendChild(user);
+    };
+
+    var removeUser = function(userData) {
+
+    };
+
     socket.on('init', function(data) {
       console.log('init');
       console.log(data);
       myColor = data.color;
       myUid = data.uid;
+      data.userlist.forEach(addUser);
     });
 
     socket.on('draw', function (data) {
@@ -24,6 +45,7 @@
     socket.on('user_connected', function (data) {
       console.log('user_connected');
       console.log(data);
+      addUser(data);
     });
 
     socket.on('user_disconnected', function (data) {
@@ -34,7 +56,7 @@
 </head>
 <body>
 <style>
-  .boardwrap, .userlist {
+  .boardwrap, .userlistwrap {
     float: left;
   }
 </style>
@@ -42,8 +64,8 @@
 <div class="boardwrap">
   <canvas id="board">Alert!</canvas>
 </div>
-<div class="userlist">
-  
+<div class="userlistwrap">
+  <ul class="userlist"></ul>
 </div>
 <script>
   var drawDot = function(x, y, color) {

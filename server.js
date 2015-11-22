@@ -4,6 +4,7 @@ var fs = require('fs');
 
 var colors = ['red', 'blue', 'green', 'orange', 'black', 'magenta'];
 var uid = 0; // TODO: make it thread-safe
+var users = [];
 
 app.listen(3000);
 
@@ -25,15 +26,23 @@ var pickColor = function() {
 };
 
 io.on('connection', function (socket) {
-  console.log('user connected: ' + socket.handshake.address);
+  console.log('user connected: ' + socket.request.connection.remoteAddress);
   socket.uid = uid++;
   socket.color = pickColor();
-  socket.broadcast.emit('user_connected', {
-    ip: socket.handshake.address,
+  var user = {
+    ip: socket.request.connection.remoteAddress,
     color: socket.color,
-    uid: socket.uid
+    uid: socket.uid,
+    ua: socket.request.headers['user-agent']
+  };
+  users.push(user);
+
+  socket.broadcast.emit('user_connected', user);
+  socket.emit('init', {
+    uid: socket.uid,
+    color: socket.color,
+    userlist: users
   });
-  socket.emit('init', {uid: socket.uid, color: socket.color});
   
   socket.on('draw', function (data) {
     console.log(data);
@@ -41,7 +50,11 @@ io.on('connection', function (socket) {
   });
 
   socket.on('disconnect', function(){
-    console.log('user disconnected: ' + socket.handshake.address);
-    io.emit('user_disconnected', { ip: socket.handshake.address });
+    console.log('user disconnected: ' + socket.request.connection.remoteAddress);
+    var idx = users.indexOf(user);
+    if (idx > -1) {
+      users.splice(idx, 1);
+    }
+    io.emit('user_disconnected', user);
   });
 });
