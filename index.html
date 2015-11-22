@@ -6,6 +6,7 @@
     var socket = io('http://localhost:3000');
     var myColor = 'grey';
     var myUid = -1;
+    var isDrawing = false;
 
     socket.on('init', function(data) {
       console.log('init');
@@ -15,7 +16,9 @@
     });
 
     socket.on('draw', function (data) {
+      console.log('draw');
       console.log(data);
+      drawDot(data.data.x, data.data.y, data.color);
     });
 
     socket.on('user_connected', function (data) {
@@ -43,15 +46,31 @@
   
 </div>
 <script>
+  var drawDot = function(x, y, color) {
+    ctx.fillStyle = color;
+    ctx.fillRect(x, y, 10, 10);
+  };
+
   var board = document.getElementById("board"),
       ctx   = board.getContext('2d');
   board.height = 480;
   board.width  = 640;
-  // ctx.strokeStyle = '#B70A02';
-  // ctx.strokeRect(15, 15, 266, 266);
-  // ctx.strokeRect(18, 18, 260, 260);
-  ctx.fillStyle = myColor; // меняем цвет клеток
-  ctx.fillRect(20, 20, 256, 256);
+  ctx.fillStyle = 'lightgrey';
+  ctx.fillRect(0, 0, 640, 480);
+
+  board.addEventListener('mousedown', function(e) {
+    isDrawing = true;
+  }, false);
+
+  board.addEventListener('mouseup', function(e) {
+    isDrawing = false;
+  }, false);
+
+  board.addEventListener('mousemove', function(e) {
+    if (isDrawing) {
+      socket.emit('draw', {x: e.offsetX, y: e.offsetY});
+    }
+  }, false);
 </script>
 </body>
 </html>
